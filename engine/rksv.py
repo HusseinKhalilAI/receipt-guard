@@ -158,7 +158,25 @@ def parse_rksv(rksv_code: str) -> RksvRecord:
         signature = rksv_pieces[13]
         )
 
+@dataclass
+class RksvLayerResult:
+    status: str
+    record: RksvRecord | None
+    reason: str | None
 
 
+# final pipeline for RKSV Detection 
+def rksv_detection_layer(img:Image.Image)-> RksvLayerResult:
 
+    rksv_code = rksv_process(img)
 
+    if rksv_code is None:
+        return RksvLayerResult(status="not_available", record=None,reason="No RKSV code found")
+
+    try:
+        parsed = parse_rksv(rksv_code)
+    except ValueError as error_in_parse_rksv:
+        return RksvLayerResult(status="malformed", record=None,reason=f"A malformed code detected: {error_in_parse_rksv}")
+    
+    return RksvLayerResult(status="valid", record=parsed,reason="RKSV is Valid.")
+            

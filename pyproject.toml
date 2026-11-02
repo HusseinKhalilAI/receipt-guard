@@ -9,6 +9,6 @@ requires-python = ">=3.12"
 dependencies = ["pillow", "pillow-heif","zxing-cpp", "opencv-contrib-python-headless"]
 
 [project.optional-dependencies]
-dev = ["pytest","pandas"]
+dev = ["pytest","pandas","qrcode"]
 [tool.setuptools]
 packages = ["engine"]
