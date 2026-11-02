@@ -162,9 +162,3 @@ def parse_rksv(rksv_code: str) -> RksvRecord:
 
 
 
-img = Image.open(r"C:\Users\hussa\Desktop\_\Projects\ReceiptsData\backer\IMG_5278.HEIC")
-rkssssssv = extract_rksv(img)
-
-print((rkssssssv))
-
-
