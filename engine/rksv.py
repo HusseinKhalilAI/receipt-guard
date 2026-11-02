@@ -5,12 +5,12 @@ import pathlib
 import cv2
 import numpy as np
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime,timedelta
 from decimal import Decimal
 import pandas as pd
 from datetime import datetime
 import re
-
+import base64
 
 register_heif_opener()
 #########################
@@ -163,20 +163,51 @@ class RksvLayerResult:
     status: str
     record: RksvRecord | None
     reason: str | None
+    flags: list
 
 
-# final pipeline for RKSV Detection 
+#########final pipeline for RKSV Detection##################################################
+            
+def valid_rksv_flags(rksv_record:RksvRecord)->list[str]:
+
+    flags = []
+
+    if rksv_record.issued_at > datetime.now() + timedelta(days=1):
+        flags.append("date_in_future")
+
+    rksv_launch_date = datetime(2017,4,1) 
+
+    if rksv_record.issued_at < rksv_launch_date:
+        flags.append("before_rksv_date")
+
+    if rksv_record.encrypted_turnover == "VFJB":
+        flags.append("training_receipt")
+
+    if rksv_record.encrypted_turnover == "U1RP":
+        flags.append("voided_receipt")
+
+    broken_signature_device_message = "Sicherheitseinrichtung ausgefallen"
+    base64_converted = base64.b64encode(broken_signature_device_message.encode()).decode()
+
+    if rksv_record.signature == base64_converted:
+        flags.append("signature_device_failed")
+
+    return flags
+
+
 def rksv_detection_layer(img:Image.Image)-> RksvLayerResult:
 
     rksv_code = rksv_process(img)
 
     if rksv_code is None:
-        return RksvLayerResult(status="not_available", record=None,reason="No RKSV code found")
+        return RksvLayerResult(status="not_available", record=None,reason="No RKSV code found",flags=[])
 
     try:
         parsed = parse_rksv(rksv_code)
     except ValueError as error_in_parse_rksv:
-        return RksvLayerResult(status="malformed", record=None,reason=f"A malformed code detected: {error_in_parse_rksv}")
-    
-    return RksvLayerResult(status="valid", record=parsed,reason="RKSV is Valid.")
-            
+        return RksvLayerResult(status="malformed", record=None,reason=f"A malformed code detected: {error_in_parse_rksv}",flags=[])
+    flags = valid_rksv_flags(parsed)
+    return RksvLayerResult(status="valid", record=parsed,reason="RKSV is Valid.",flags=flags)
+
+
+#################################################################################################
