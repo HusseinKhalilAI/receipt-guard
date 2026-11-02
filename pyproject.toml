@@ -6,10 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "receipt-guard"
 version = "0.1.0"
 requires-python = ">=3.12"
-dependencies = []
+dependencies = ["pillow", "pillow-heif","zxing-cpp", "opencv-contrib-python-headless"]
 
 [project.optional-dependencies]
-dev = ["pytest"]
-
+dev = ["pytest","pandas"]
 [tool.setuptools]
 packages = ["engine"]
