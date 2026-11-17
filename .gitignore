@@ -9,3 +9,5 @@ data/
 *.pt
 *.pth
 *.safetensors
+scratch.py
+tempCodeRunnerFile.py
